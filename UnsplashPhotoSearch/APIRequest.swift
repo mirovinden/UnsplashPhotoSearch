@@ -9,27 +9,42 @@ import UIKit
 
 
 enum NetworkErrors: Error {
+    case ImageDataNotFound
     case noImagesFound
 }
 
 struct PhotoSearchRequest {
 
-    func photoSearch() async throws -> [UnsplashPhoto] {
+    func photoSearchRequest(searchWord: String, itemsPerPage: String, page: Int) async throws -> [UnsplashPhoto] {
 
-        let url = URL(string: "https://api.unsplash.com/search/photos?page=2&per_page=30&query=lemon&client_id=ZmifjFVuI-ybPzVC0bjS5fVfOxX8q8KHH813yxMKkhY")!
-        let urlRequest = URLRequest(url: url)
+        let query = [
+            "page": "\(page)",
+            "per_page": itemsPerPage,
+            "query": searchWord
+        ]
+        
+        var components = URLComponents()
+        components.scheme = "https"
+        components.host = "api.unsplash.com"
+        components.path = "/search/photos"
+        components.queryItems = query.map { URLQueryItem(name: $0.key, value: $0.value) }
+        let baseURL = URL(string: components.string!)!
+
+        var urlRequest = URLRequest(url: baseURL)
+        urlRequest.setValue("Client-ID ZmifjFVuI-ybPzVC0bjS5fVfOxX8q8KHH813yxMKkhY", forHTTPHeaderField: "Authorization")
 
         let (data, response) = try await URLSession.shared.data(for: urlRequest)
 
-
         guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
-            throw NetworkErrors.noImagesFound
+            throw NetworkErrors.ImageDataNotFound
         }
 
+        
         let photos = try JSONDecoder().decode(PhotoSearch.self, from: data)
 
         return photos.results
     }
+
     func imageRequest(url: String) async throws -> UIImage? {
         let url = URL(string: url)!
         let urlRequest = URLRequest(url: url)

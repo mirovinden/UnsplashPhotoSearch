@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import Kingfisher
 
 class ImageInfoCell: UICollectionViewCell {
     var imageView: UIImageView = .init()
@@ -23,48 +24,44 @@ class ImageInfoCell: UICollectionViewCell {
         fatalError("init(coder:) has not been implemented")
     }
 
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        imageView.frame = self.contentView.bounds
+    }
+
+
+    private func setupUI() {
+        contentView.addSubview(imageView)
+        imageView.contentMode = .scaleAspectFill
+        contentView.clipsToBounds = true
+        contentView.layer.cornerRadius = 8
+
+//        setupConstraints()
+    }
+
     func configure(photoItem: UnsplashPhoto) async {
         descriptionLabel.text = photoItem.description ?? photoItem.alternativeDescription
         imageView.image = UIImage(systemName: "photo")
 
         do {
-            let image = try await PhotoSearchRequest().imageRequest(url: photoItem.photoURL.full)
+            let image = try await PhotoSearchRequest().imageRequest(url: photoItem.photoURL.regular)
             self.imageView.image = image
+            imageView.frame = contentView.bounds
         } catch {
             print(error)
         }
 
     }
 
-
-    private func setupUI() {
-        self.backgroundColor = .systemGray5
-        self.addSubview(imageView)
-        self.addSubview(descriptionLabel)
-        imageView.contentMode = .scaleAspectFit
-        descriptionLabel.numberOfLines = 2
-
-
-        setupConstraints()
-    }
-
-    private func setupConstraints() {
-        imageView.translatesAutoresizingMaskIntoConstraints = false
-        descriptionLabel.translatesAutoresizingMaskIntoConstraints = false
-        urlLabel.translatesAutoresizingMaskIntoConstraints = false
-
-        NSLayoutConstraint.activate([
-            imageView.leadingAnchor.constraint(equalTo: self.leadingAnchor),
-            imageView.trailingAnchor.constraint(equalTo: self.trailingAnchor),
-            imageView.topAnchor.constraint(equalTo: self.topAnchor),
-
-            descriptionLabel.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 5),
-            descriptionLabel.trailingAnchor.constraint(equalTo: self.trailingAnchor),
-            descriptionLabel.bottomAnchor.constraint(equalTo: self.bottomAnchor),
-            descriptionLabel.topAnchor.constraint(equalTo: imageView.bottomAnchor, constant: 5)
-        ])
-
-
-    }
+//    private func setupConstraints() {
+//        imageView.translatesAutoresizingMaskIntoConstraints = false
+//
+//        NSLayoutConstraint.activate([
+//            imageView.leadingAnchor.constraint(equalTo: self.leadingAnchor),
+//            imageView.trailingAnchor.constraint(equalTo: self.trailingAnchor),
+//            imageView.topAnchor.constraint(equalTo: self.topAnchor),
+//            imageView.bottomAnchor.constraint(equalTo: self.bottomAnchor)
+//        ])
+//    }
 
 }
