@@ -6,28 +6,29 @@
 //
 
 import UIKit
+import Kingfisher
+
 
 class SearchViewController: UIViewController, UISearchBarDelegate {
 
-    var collectionView: UICollectionView = .init(frame: CGRect(), collectionViewLayout: UICollectionViewLayout())
-    var searchController: UISearchController = .init()
 
-    var itemsPerPageSegmentedControl = UISegmentedControl()
-    var itemsPerPageLabel = UILabel()
-    var stackView = UIStackView()
+    private let collectionView: UICollectionView = .init(frame: CGRect(), collectionViewLayout: UICollectionViewLayout())
+    private let searchController: UISearchController = .init()
+    private let itemsPerPageSegmentedControl = UISegmentedControl()
+    private let itemsPerPageLabel = UILabel()
+    private let stackView = UIStackView()
 
     var pageNumber: Int = 1
 
-    var previousPageButton = UIButton(configuration: .borderless())
-    var nextPageButton = UIButton(configuration: .borderless())
-    var pageNumberLabel = UILabel()
-    var pageStackView = UIStackView()
+    let previousPageButton = UIButton(configuration: .borderless())
+    let nextPageButton = UIButton(configuration: .borderless())
+    let pageNumberLabel = UILabel()
+    let pageStackView = UIStackView()
 
     var photoSearchData: [UnsplashPhoto] = []
     var dataSource: DataSourceType!
 
     var photoSearchTask: Task<Void, Never>? = nil
-    var imageViewLoadTask: [IndexPath: Task<Void, Never>] = [:]
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -37,6 +38,7 @@ class SearchViewController: UIViewController, UISearchBarDelegate {
         dataSource = createDataSource()
         collectionView.dataSource = dataSource
         collectionView.collectionViewLayout = createCollectionViewLayout()
+        ImageCache.default.clearDiskCache()
     }
 
     @objc func fetchMatchingItems() {
@@ -46,7 +48,7 @@ class SearchViewController: UIViewController, UISearchBarDelegate {
         guard let itemsPerPage = itemsPerPageSegmentedControl.titleForSegment(at: segmentIndex) else {
             return
         }
-
+        
         photoSearchTask?.cancel()
         photoSearchTask = Task {
             do {
@@ -63,41 +65,36 @@ class SearchViewController: UIViewController, UISearchBarDelegate {
     }
 
     @objc func pageButtonsClicked(sender: UIButton) {
-        if sender == previousPageButton, pageNumber > 1 {
-            pageNumber -= 1
-            pageNumberLabel.text = String(pageNumber)
-            fetchMatchingItems()
-        } else if sender == nextPageButton {
-            pageNumber += 1
-            pageNumberLabel.text = String(pageNumber)
-            fetchMatchingItems()
-        }
+        collectionView.setContentOffset(CGPoint(x: 0, y: 0), animated: false)
+        sender == previousPageButton ? (pageNumber -= 1) : (pageNumber += 1)
+        pageNumberLabel.text = String(pageNumber)
+        previousPageButton.isEnabled = pageNumber == 1 ? false : true
+
+        fetchMatchingItems()
     }
 
     // searchControllerDelegate
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        pageNumberLabel.text = "1"
+        pageNumber = 1
+        previousPageButton.isEnabled = false
         perform(#selector(fetchMatchingItems), with: nil)
     }
-
-
-
 
     //Data Source, Snapshot, Layout
     func createDataSource() -> DataSourceType {
         let dataSource = DataSourceType(collectionView: collectionView) { collectionView, indexPath, photoItem in
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath) as! ImageInfoCell
-
-            self.imageViewLoadTask[indexPath]?.cancel()
-            self.imageViewLoadTask[indexPath] = Task {
-                await cell.configure(photoItem: photoItem)
-                self.imageViewLoadTask[indexPath] = nil
-            }
+            cell.configure(photoURL: photoItem.photoURL.small)
 
             return cell
         }
 
+
         return dataSource
     }
+
+
 
     func updateCollectionView() {
         var snapshot: NSDiffableDataSourceSnapshot<ViewModel.Section, ViewModel.Item> {
@@ -110,6 +107,8 @@ class SearchViewController: UIViewController, UISearchBarDelegate {
         dataSource.apply(snapshot, animatingDifferences: true)
     }
 
+
+    
     func createCollectionViewLayout() -> UICollectionViewCompositionalLayout {
         let itemSize = NSCollectionLayoutSize(
             widthDimension: .fractionalWidth(0.5),
@@ -135,6 +134,12 @@ class SearchViewController: UIViewController, UISearchBarDelegate {
                                                         trailing: 0)
 
         return UICollectionViewCompositionalLayout(section: section)
+    }
+
+    func collectionView(_ collectionView: UICollectionView, prefetchItemsAt indexPaths: [IndexPath]) {
+//        print("pre:\(indexPaths)")
+//        let urls = indexPaths.map { photoSearchData[$0.row].photoURL.full}
+//        ImagePrefetcher(urls: urls).start()
     }
 }
 
@@ -189,6 +194,7 @@ private extension SearchViewController {
         pageStackView.layer.cornerRadius = 8
 
         previousPageButton.configuration?.title = "<"
+        previousPageButton.isEnabled = false
         previousPageButton.addTarget(self, action: #selector(pageButtonsClicked), for: .touchUpInside)
         nextPageButton.configuration?.title = ">"
         nextPageButton.addTarget(self, action: #selector(pageButtonsClicked), for: .touchUpInside)
@@ -198,49 +204,11 @@ private extension SearchViewController {
     }
 
     func setupSegmentedControl() {
-        // ????????
-        let segmentHandler: (UIAction) -> Void = { [self] action in perform(#selector(fetchMatchingItems)) }
-
-        itemsPerPageSegmentedControl.insertSegment(
-            action: UIAction(
-                title: "10",
-                handler: segmentHandler
-            ),
-            at: 0,
-            animated: false
-        )
-
-        itemsPerPageSegmentedControl.insertSegment(
-            action: UIAction(
-                title: "20",
-                handler: segmentHandler
-            ),
-            at: 1,
-            animated: false
-        )
-
-        itemsPerPageSegmentedControl.insertSegment(
-            action: UIAction(
-                title: "30",
-                handler: segmentHandler
-            ),
-            at: 2,
-            animated: false
-        )
+        itemsPerPageSegmentedControl.insertSegment(withTitle: "10", at: 0, animated: false)
+        itemsPerPageSegmentedControl.insertSegment(withTitle: "20", at: 1, animated: false)
+        itemsPerPageSegmentedControl.insertSegment(withTitle: "30", at: 2, animated: false)
         itemsPerPageSegmentedControl.selectedSegmentIndex = 0
-
-        //        let segmentAction = UIAction(title: "10") { [self] action in perform(#selector(fetchMatchingItems)) }
-
-//        itemsPerPageSegmentedControl.insertSegment(action: segmentAction, at: 1, animated: false)
-//        itemsPerPageSegmentedControl.insertSegment(action: segmentAction, at: 2, animated: false)
-
-//        itemsPerPageSegmentedControl.setTitle("10", forSegmentAt: 1)
-//        itemsPerPageSegmentedControl.setTitle("20", forSegmentAt: 2)
-//        itemsPerPageSegmentedControl.setTitle("30", forSegmentAt: 3)
-
-//        itemsPerPageSegmentedControl.insertSegment(withTitle: "10", at: 0, animated: false)
-//        itemsPerPageSegmentedControl.insertSegment(withTitle: "20", at: 1, animated: false)
-//        itemsPerPageSegmentedControl.insertSegment(withTitle: "30", at: 2, animated: false)
+        itemsPerPageSegmentedControl.addTarget(self, action: #selector(fetchMatchingItems), for: .valueChanged)
     }
 
     func setupConstraints() {

@@ -9,9 +9,9 @@ import UIKit
 import Kingfisher
 
 class ImageInfoCell: UICollectionViewCell {
-    var imageView: UIImageView = .init()
-    var descriptionLabel: UILabel = .init()
-    var urlLabel: UILabel = .init()
+    let imageView: UIImageView = .init()
+    let descriptionLabel: UILabel = .init()
+    let urlLabel: UILabel = .init()
 
 
     override init(frame: CGRect) {
@@ -36,32 +36,15 @@ class ImageInfoCell: UICollectionViewCell {
         contentView.clipsToBounds = true
         contentView.layer.cornerRadius = 8
 
-//        setupConstraints()
     }
 
-    func configure(photoItem: UnsplashPhoto) async {
-        descriptionLabel.text = photoItem.description ?? photoItem.alternativeDescription
-        imageView.image = UIImage(systemName: "photo")
+    func configure(photoURL: URL) {
 
-        do {
-            let image = try await PhotoSearchRequest().imageRequest(url: photoItem.photoURL.regular)
-            self.imageView.image = image
-            imageView.frame = contentView.bounds
-        } catch {
-            print(error)
-        }
-
+        imageView.kf.indicatorType = .activity
+        imageView.kf.setImage(
+            with: photoURL,
+            placeholder: UIImage(systemName: "photo"),
+            options: [.transition(.fade(0.3))]
+        )
     }
-
-//    private func setupConstraints() {
-//        imageView.translatesAutoresizingMaskIntoConstraints = false
-//
-//        NSLayoutConstraint.activate([
-//            imageView.leadingAnchor.constraint(equalTo: self.leadingAnchor),
-//            imageView.trailingAnchor.constraint(equalTo: self.trailingAnchor),
-//            imageView.topAnchor.constraint(equalTo: self.topAnchor),
-//            imageView.bottomAnchor.constraint(equalTo: self.bottomAnchor)
-//        ])
-//    }
-
 }

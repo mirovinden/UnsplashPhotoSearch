@@ -13,12 +13,14 @@ struct UnsplashPhoto: Codable {
     let identifier: String
     let description: String?
     let alternativeDescription: String?
+    let blurHash: String
     let photoURL: PhotoURLS
 
     enum CodingKeys: String, CodingKey {
         case identifier  = "id"
         case description
         case alternativeDescription = "alt_description"
+        case blurHash
         case photoURL = "urls"
     }
 }
@@ -37,9 +39,9 @@ extension UnsplashPhoto: Hashable, Comparable {
 }
 
 struct PhotoURLS: Codable {
-    let regular: String
-    let small: String
-    let full: String
+    let regular: URL
+    let small: URL
+    let full: URL
 }
 
 

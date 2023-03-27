@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		186C25CB29CB79B400BEA395 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 186C25CA29CB79B400BEA395 /* Kingfisher */; };
+		186C25CD29D2293A00BEA395 /* BlurHash.swift in Sources */ = {isa = PBXBuildFile; fileRef = 186C25CC29D2293A00BEA395 /* BlurHash.swift */; };
 		18A791DF298A7758007AD71E /* SearchVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18A791DE298A7758007AD71E /* SearchVC.swift */; };
 		18A791E1298A7E2A007AD71E /* Photo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18A791E0298A7E2A007AD71E /* Photo.swift */; };
 		18A791E3298A92AA007AD71E /* APIRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18A791E2298A92AA007AD71E /* APIRequest.swift */; };
@@ -20,6 +21,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		186C25CC29D2293A00BEA395 /* BlurHash.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlurHash.swift; sourceTree = "<group>"; };
 		18A791DE298A7758007AD71E /* SearchVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchVC.swift; sourceTree = "<group>"; };
 		18A791E0298A7E2A007AD71E /* Photo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Photo.swift; sourceTree = "<group>"; };
 		18A791E2298A92AA007AD71E /* APIRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIRequest.swift; sourceTree = "<group>"; };
@@ -72,6 +74,7 @@
 				18C81CED2989BAA8009707AB /* Info.plist */,
 				18A791DE298A7758007AD71E /* SearchVC.swift */,
 				18A791E0298A7E2A007AD71E /* Photo.swift */,
+				186C25CC29D2293A00BEA395 /* BlurHash.swift */,
 				18A791E4298A9965007AD71E /* PhotoSearch.swift */,
 				18A791E2298A92AA007AD71E /* APIRequest.swift */,
 			);
@@ -156,6 +159,7 @@
 			files = (
 				18A791E5298A9965007AD71E /* PhotoSearch.swift in Sources */,
 				18A791E1298A7E2A007AD71E /* Photo.swift in Sources */,
+				186C25CD29D2293A00BEA395 /* BlurHash.swift in Sources */,
 				18A791DF298A7758007AD71E /* SearchVC.swift in Sources */,
 				18C81CE02989BAA6009707AB /* AppDelegate.swift in Sources */,
 				18C50650299D0E2800D28B1A /* ImageInfoCell.swift in Sources */,
