@@ -8,8 +8,8 @@
 import Foundation
 
 
-struct PhotoSearch: Codable {
+struct PhotoSearchResults: Codable {
     let total: Int
     let total_pages: Int
-    let results: [UnsplashPhoto]
+    let results: [Photo]
 }

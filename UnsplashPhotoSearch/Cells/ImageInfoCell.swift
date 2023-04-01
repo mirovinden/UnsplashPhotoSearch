@@ -9,7 +9,9 @@ import UIKit
 import Kingfisher
 
 class ImageInfoCell: UICollectionViewCell {
+    static let identifier = "Cell"
     let imageView: UIImageView = .init()
+    
     let descriptionLabel: UILabel = .init()
     let urlLabel: UILabel = .init()
 
@@ -34,16 +36,14 @@ class ImageInfoCell: UICollectionViewCell {
         contentView.addSubview(imageView)
         imageView.contentMode = .scaleAspectFill
         contentView.clipsToBounds = true
-        contentView.layer.cornerRadius = 8
-
     }
 
-    func configure(photoURL: URL) {
+    func configure(with photoData: Photo) {
 
         imageView.kf.indicatorType = .activity
         imageView.kf.setImage(
-            with: photoURL,
-            placeholder: UIImage(systemName: "photo"),
+            with: photoData.photoURL.regular,
+            placeholder: UIImage(blurHash: photoData.blurHash, size: CGSize(width: 30, height: 30), punch: 1),
             options: [.transition(.fade(0.3))]
         )
     }
