@@ -89,11 +89,11 @@ struct UsersSearchRequest: APIRequest {
 struct PhotoDataRequest {
     func fetchPhotoData(photoId: String) async throws -> Photo {
         var components = URLComponents(string: "https://api.unsplash.com")!
-        components.path = "/photo/:id\(photoId)"
+        components.path = "/photos/\(photoId)"
         let url = URL(string: components.string!)!
-        let urlRequest = URLRequest(url: url)
+        var urlRequest = URLRequest(url: url)
+        urlRequest.setValue("Client-ID ZmifjFVuI-ybPzVC0bjS5fVfOxX8q8KHH813yxMKkhY", forHTTPHeaderField: "Authorization")
 
-        print(url)
         let (data, response) = try await URLSession.shared.data(for: urlRequest)
 
         guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
@@ -101,6 +101,23 @@ struct PhotoDataRequest {
         }
 
         let photoData = try JSONDecoder().decode(Photo.self, from: data)
+
+        return photoData
+    }
+}
+
+struct FetchPhoto {
+    func fetchPhoto(url: URL) async throws -> UIImage {
+        var urlRequest = URLRequest(url: url)
+        urlRequest.setValue("Client-ID ZmifjFVuI-ybPzVC0bjS5fVfOxX8q8KHH813yxMKkhY", forHTTPHeaderField: "Authorization")
+
+        let (data, response) = try await URLSession.shared.data(for: urlRequest)
+
+        guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+            throw NetworkErrors.photoDataNotFound
+        }
+
+        let photoData = UIImage(data: data)!
 
         return photoData
     }

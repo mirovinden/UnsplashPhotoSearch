@@ -47,4 +47,13 @@ class ImageInfoCell: UICollectionViewCell {
             options: [.transition(.fade(0.3))]
         )
     }
+
+    func configure(with preview: PreviewPhoto) {
+        imageView.kf.indicatorType = .activity
+        imageView.kf.setImage(
+            with: preview.photoURL.small,
+            placeholder: UIImage(blurHash: preview.blurHash, size: CGSize(width: 30, height: 30), punch: 1),
+            options: [.transition(.fade(0.3))]
+        )
+    }
 }

@@ -13,7 +13,7 @@ struct Collection: Codable {
     let title: String
     let totalPhotos: Int
     let photosURL: URL
-    let photoPreviews: [Photo]
+    let photoPreviews: [PreviewPhoto]
 
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
@@ -22,7 +22,7 @@ struct Collection: Codable {
 
         let new = try decoder.container(keyedBy: NewKey.self)
         let links = try new.decode(Links.self, forKey: .links)
-        let previewPhotos = try new.decode([Photo].self, forKey: .preview)
+        let previewPhotos = try new.decode([PreviewPhoto].self, forKey: .preview)
         let totalPhotos = try new.decode(Int.self, forKey: .totalPhotos)
         self.totalPhotos = totalPhotos
         self.photosURL = links.photos
