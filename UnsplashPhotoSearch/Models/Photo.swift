@@ -56,11 +56,11 @@ struct Location:Codable {
     let name: String?
     let city: String?
     let country: String?
-    let coordinate: Coordinate?
+    let position: Coordinate
 }
 struct Coordinate: Codable {
-    let latitude: String?
-    let longitude: String?
+    let latitude: Double?
+    let longitude: Double?
 }
 
 

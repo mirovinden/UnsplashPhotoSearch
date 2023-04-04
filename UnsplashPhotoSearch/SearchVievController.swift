@@ -9,6 +9,7 @@
 import UIKit
 import Kingfisher
 
+
 class SearchViewController: UINavigationController, UISearchBarDelegate {
 
     private let collectionView: UICollectionView = .init(frame: CGRect(), collectionViewLayout: UICollectionViewLayout())
@@ -18,35 +19,23 @@ class SearchViewController: UINavigationController, UISearchBarDelegate {
     private let stackView = UIStackView()
     private let dataSearchController = SearchController()
 
-    var pageNumber: Int = 1
-    let queryOptions = ["photos", "collections", "users"]
-
-    enum QueryOptions: Int {
-        case photos
-        case collections
-        case users
-    }
-
-    var category = QueryOptions.photos
-
-    var photoSearchData: [Photo] = []
-    var collectionSearchData: [Collection] = []
-    var userSearchData: [User] = []
-
     let previousPageButton = UIButton(configuration: .borderless())
     let nextPageButton = UIButton(configuration: .borderless())
     let pageNumberLabel = UILabel()
     let pageStackView = UIStackView()
 
-    var SearchTask: Task<Void, Never>? = nil
+    
+    var pageNumber: Int = 1
+    let searchCategory = ["photos", "collections", "users"]
+    var category = QueryOptions.photos
+
+    var searchTask: Task<Void, Never>?
 
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
 
-        collectionView.register(ImageInfoCell.self, forCellWithReuseIdentifier: ImageInfoCell.identifier)
-        collectionView.register(UserInfoCell.self, forCellWithReuseIdentifier: UserInfoCell.identifier)
-        collectionView.register(CollectionsHeaderView.self, forSupplementaryViewOfKind: "header", withReuseIdentifier: "header")
+       
         fetchMatchingItems()
     }
 
@@ -57,155 +46,30 @@ class SearchViewController: UINavigationController, UISearchBarDelegate {
         }
     }
 
-
-
     @objc func fetchMatchingItems() {
-        let searchCategory = queryOptions[searchController.searchBar.selectedScopeButtonIndex]
-        let searchWord = "ocean"
+        let searchCategory = searchCategory[searchController.searchBar.selectedScopeButtonIndex]
+        let searchWord = "panda"
         let segmentIndex = itemsPerPageSegmentedControl.selectedSegmentIndex
         guard let itemsPerPage = itemsPerPageSegmentedControl.titleForSegment(at: segmentIndex) else { return }
-
+        
         category = QueryOptions.init(rawValue: searchController.searchBar.selectedScopeButtonIndex)!
-
-        SearchTask?.cancel()
-        SearchTask = Task {
+        let urlRequest = URLRequest(
+            path: searchCategory,
+            queryItems: Array.pageQueryItems(searchWord: searchWord, itemsPerPage: itemsPerPage, page: pageNumber)
+        )
+        searchTask?.cancel()
+        searchTask = Task {
             do {
-
-                switch category {
-                case .photos:
-                    let photosData = try await PhotosSearchRequest().sendRequest(
-                        category: searchCategory,
-                        searchWord: searchWord,
-                        itemsPerPage: itemsPerPage,
-                        page: pageNumber
-                    )
-                    self.photoSearchData = photosData
-
-                case .collections:
-                    let collectionsData = try await CollectionsSearchRequest().sendRequest(
-                        category: searchCategory,
-                        searchWord: searchWord,
-                        itemsPerPage: itemsPerPage,
-                        page: pageNumber
-                    )
-                    self.collectionSearchData = collectionsData
-                case .users:
-                    let usersData = try await UsersSearchRequest().sendRequest(
-                        category: searchCategory,
-                        searchWord: searchWord,
-                        itemsPerPage: itemsPerPage,
-                        page: pageNumber
-                    )
-                    self.userSearchData = usersData
-
-                }
-            }
-            catch {
+                try await dataSearchController.searchItems(with: urlRequest, category: category)
+                collectionView.collectionViewLayout = dataSearchController.createLayout(cater: category)
+                collectionView.reloadData()
+            } catch {
                 print(error)
             }
-            collectionView.reloadData()
-            collectionView.collectionViewLayout = createCollectionViewLayout()
 
-            SearchTask = nil
+            searchTask?.cancel()
         }
     }
-
-//Data Source
-
-    
-    //Layout
-    func createCollectionViewLayout() -> UICollectionViewCompositionalLayout {
-        switch category {
-        case.photos:
-            let itemSize = NSCollectionLayoutSize(
-                widthDimension: .fractionalWidth(0.5),
-                heightDimension: .fractionalWidth(0.5)
-            )
-            let item = NSCollectionLayoutItem(layoutSize: itemSize)
-            
-            let groupSize = NSCollectionLayoutSize(
-                widthDimension: .fractionalWidth(1),
-                heightDimension: .fractionalWidth(0.5)
-            )
-            let group = NSCollectionLayoutGroup.horizontal(
-                layoutSize: groupSize,
-                repeatingSubitem: item,
-                count: 2
-            )
-            group.interItemSpacing = .fixed(3)
-            
-            let section = NSCollectionLayoutSection(group: group)
-            section.contentInsets = NSDirectionalEdgeInsets(top: 5,
-                                                            leading: 0,
-                                                            bottom: 0,
-                                                            trailing: 0)
-            
-            return UICollectionViewCompositionalLayout(section: section)
-        case .collections:
-            let itemSize = NSCollectionLayoutSize(
-                widthDimension: .fractionalWidth(1/4),
-                heightDimension: .fractionalHeight(1)
-            )
-            let item = NSCollectionLayoutItem(layoutSize: itemSize)
-            item.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
-            let groupSize = NSCollectionLayoutSize(
-                widthDimension: .fractionalWidth(1),
-                heightDimension: .fractionalWidth(0.2)
-            )
-            let group = NSCollectionLayoutGroup.horizontal(
-                layoutSize: groupSize,
-                repeatingSubitem: item,
-                count: 4
-            )
-            group.interItemSpacing = .fixed(3)
-
-            let sectionHeaderSize = NSCollectionLayoutSize(
-                widthDimension: .fractionalWidth(1),
-                heightDimension: .absolute(44)
-            )
-            let sectionHeader = NSCollectionLayoutBoundarySupplementaryItem(
-                layoutSize: sectionHeaderSize,
-                elementKind: "header",
-                alignment: .top
-            )
-            
-            let section = NSCollectionLayoutSection(group: group)
-            section.contentInsets = NSDirectionalEdgeInsets(top: 3, leading: 7, bottom: 10, trailing: 7)
-            section.boundarySupplementaryItems = [sectionHeader]
-            section.decorationItems = [NSCollectionLayoutDecorationItem.background(elementKind: "background")]
-            let layout = UICollectionViewCompositionalLayout(section: section)
-            layout.register(SectionBackgroundColor.self, forDecorationViewOfKind: "background")
-
-            return layout
-        case .users:
-            let itemSize = NSCollectionLayoutSize(
-                widthDimension: .fractionalWidth(1),
-                heightDimension: .fractionalHeight(1)
-            )
-            let item = NSCollectionLayoutItem(layoutSize: itemSize)
-            
-            let groupSize = NSCollectionLayoutSize(
-                widthDimension: .fractionalWidth(1),
-                heightDimension: .absolute(50)
-            )
-            let group = NSCollectionLayoutGroup.horizontal(
-                layoutSize: groupSize,
-                repeatingSubitem: item,
-                count: 1
-            )
-            
-            let section = NSCollectionLayoutSection(group: group)
-            section.contentInsets = NSDirectionalEdgeInsets(top: 5,
-                                                            leading: 5,
-                                                            bottom: 5,
-                                                            trailing: 5)
-            section.interGroupSpacing = 5
-            
-            return UICollectionViewCompositionalLayout(section: section)
-            
-        }
-    }
-
     @objc func pageButtonsClicked(sender: UIButton) {
         collectionView.setContentOffset(CGPoint(x: 0, y: 0), animated: false)
         sender == previousPageButton ? (pageNumber -= 1) : (pageNumber += 1)
@@ -230,7 +94,27 @@ class SearchViewController: UINavigationController, UISearchBarDelegate {
 
 //UISetup
 private extension SearchViewController {
+
+    private func handleSearchControllerEvent(_ event: SearchController.Event) {
+        switch event {
+        case .photoSelected(let photo):
+            let photoDetailVC = PhotoViewController(photo: photo)
+            self.show(photoDetailVC, sender: nil)
+        case .collectionSelected(let collection):
+            let collectionDetailVC = CollectionDetailViewController(photoUrl: collection.photosURL)
+            self.show(collectionDetailVC, sender: nil)
+        }
+    }
+
     func setupUI() {
+        dataSearchController.onEvent = { [unowned self] event in
+            self.handleSearchControllerEvent(event)
+        }
+
+        collectionView.register(ImageInfoCell.self, forCellWithReuseIdentifier: ImageInfoCell.identifier)
+        collectionView.register(UserInfoCell.self, forCellWithReuseIdentifier: UserInfoCell.identifier)
+        collectionView.register(CollectionsHeaderView.self, forSupplementaryViewOfKind: "header", withReuseIdentifier: "header")
+        
         view.addSubview(collectionView)
         view.addSubview(pageStackView)
         view.addSubview(stackView)
@@ -292,13 +176,11 @@ private extension SearchViewController {
     }
 
     func setupConstraints() {
-
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         stackView.translatesAutoresizingMaskIntoConstraints = false
         pageStackView.translatesAutoresizingMaskIntoConstraints = false
 
         NSLayoutConstraint.activate([
-
             pageStackView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 140),
             pageStackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -140),
             pageStackView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -20),
@@ -315,32 +197,4 @@ private extension SearchViewController {
             collectionView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
     }
-
 }
-
-
-
-
-//Data Source, Snapshot, Layout
-
-//func createDataSource() -> DataSourceType {
-//    let dataSource = DataSourceType(collectionView: collectionView) { collectionView, indexPath, photoItem in
-//        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath) as! ImageInfoCell
-//        cell.configure(photoData: photoItem)
-//
-//        return cell
-//    }
-//
-//    return dataSource
-//}
-//
-//func updateCollectionView() {
-//    var snapshot: NSDiffableDataSourceSnapshot<ViewModel.Section, ViewModel.Item> {
-//        var snapshot = NSDiffableDataSourceSnapshot<ViewModel.Section, ViewModel.Item>()
-//        snapshot.appendSections([0])
-//        snapshot.appendItems(photoSearchData,toSection: 0)
-//
-//        return snapshot
-//    }
-//    dataSource.apply(snapshot, animatingDifferences: true)
-//    }

@@ -8,23 +8,22 @@
 import UIKit
 import Kingfisher
 
-class PhotoDetailViewController: UIViewController {
-    let photoDetailController: PhotoDetailController
+class PhotoViewController: UIViewController {
     let imageView: UIImageView = .init()
-
-    let likesLabel: UILabel = .init()
-    let likesButton: UIButton = .init()
-    let likesStackView: UIStackView = .init()
-    var photoIsLiked: Bool = false {
+    private let likesLabel: UILabel = .init()
+    private let likesButton: UIButton = .init()
+    private let likesStackView: UIStackView = .init()
+    private var photoIsLiked: Bool = false {
         didSet {
             likesButton.setNeedsUpdateConfiguration()
         }
     }
+    private let infoButton: UIButton = .init()
+
+    var photo: Photo
     
-    var photo: Photo!
-    
-    init(controller: PhotoDetailController) {
-        self.photoDetailController = controller
+    init(photo: Photo) {
+        self.photo = photo
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -41,7 +40,7 @@ class PhotoDetailViewController: UIViewController {
     
     func update() {
         Task {
-            self.photo = try await photoDetailController.fetchPhotoData()
+            self.photo = try await PhotoDataRequest().fetchPhotoData(photoId: photo.id)
             imageView.kf.setImage(
                 with: photo.photoURL.full,
                 placeholder: UIImage().blurHash(from: photo),
@@ -55,11 +54,15 @@ class PhotoDetailViewController: UIViewController {
     }
 }
 
-private extension PhotoDetailViewController {
+private extension PhotoViewController {
     func setupUI() {
         view.addSubview(imageView)
         view.addSubview(likesStackView)
+        view.addSubview(infoButton)
         view.backgroundColor = .black
+        title = photo.user?.username
+        
+        imageView.image = UIImage().blurHash(from: photo)
         imageView.contentMode = .scaleAspectFit
         imageView.kf.indicatorType = .activity
 
@@ -69,12 +72,13 @@ private extension PhotoDetailViewController {
         likesStackView.alignment = .trailing
         likesStackView.distribution = .fillEqually
 
-        likesLabel.text = "1502"
         likesLabel.textColor = .red
+        likesLabel.text = String(photo.likes ?? 0)
 
         setupLikeButton()
         setupConstraints()
     }
+    
     func setupLikeButton() {
         var config = UIButton.Configuration.plain()
         config.image = UIImage(systemName: "heart")
@@ -91,8 +95,16 @@ private extension PhotoDetailViewController {
             button.configuration = config
         }
         likesButton.addAction(
+            UIAction { _ in self.photoIsLiked = !self.photoIsLiked },
+            for: .touchUpInside
+        )
+        
+        infoButton.configuration = config
+        infoButton.configuration?.image = UIImage(systemName: "info.circle.fill")
+        infoButton.configuration?.baseForegroundColor = .gray
+        infoButton.addAction(
             UIAction { _ in
-                self.photoIsLiked = !self.photoIsLiked
+                self.present(PhotoDetailViewController(location: self.photo.location!), animated: true)
             },
             for: .touchUpInside
         )
@@ -100,10 +112,14 @@ private extension PhotoDetailViewController {
 
     func setupConstraints() {
         likesStackView.translatesAutoresizingMaskIntoConstraints = false
-
+        infoButton.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
             likesLabel.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -40),
             likesLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -5),
+            
+            infoButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 5),
+            infoButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -40),
+
         ])
 
     }
