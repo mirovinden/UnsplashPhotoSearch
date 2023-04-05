@@ -34,7 +34,6 @@ class PhotoScreen: UICollectionView, UICollectionViewDataSource {
         let item = photoData[indexPath.item]
         cell.configure(with: item)
         return cell
-
     }
 }
 

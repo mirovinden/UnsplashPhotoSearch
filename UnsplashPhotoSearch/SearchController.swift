@@ -13,8 +13,6 @@ enum QueryOptions: Int {
     case users
 }
 
-
-
 class SearchController: NSObject, UICollectionViewDataSource, UICollectionViewDelegate {
 
     enum Event {
@@ -87,7 +85,7 @@ class SearchController: NSObject, UICollectionViewDataSource, UICollectionViewDe
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: ImageInfoCell.identifier, for: indexPath) as! ImageInfoCell
             let item = photoSearchData[indexPath.item]
             cell.configure(with: item)
-
+            
             return cell
         case .collections:
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: ImageInfoCell.identifier, for: indexPath) as! ImageInfoCell
@@ -129,9 +127,10 @@ class SearchController: NSObject, UICollectionViewDataSource, UICollectionViewDe
         case .users:
             return
         }
-
-
     }
+
+    
+
 
 }
 
