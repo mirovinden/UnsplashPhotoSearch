@@ -14,9 +14,12 @@ enum NetworkErrors: Error {
 }
 
 extension Array where Element == URLQueryItem {
-    static func pageQueryItems(searchWord: String, itemsPerPage: String, page: Int) -> [URLQueryItem] {
-        ["page": "\(page)", "per_page": itemsPerPage, "query": searchWord]
-            .map { URLQueryItem(name: $0.key, value: $0.value) }
+    static func pageQueryItems(searchWord: String, page: Int) -> [URLQueryItem] {
+        [
+            "page": "\(page)",
+            "per_page": "30",
+            "query": searchWord
+        ].map { URLQueryItem(name: $0.key, value: $0.value) }
     }
 }
 

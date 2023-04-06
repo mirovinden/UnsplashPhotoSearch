@@ -7,7 +7,7 @@
 
 import UIKit
 
-enum QueryOptions: Int {
+enum SearchCategory: String {
     case photos
     case collections
     case users
@@ -26,27 +26,38 @@ class SearchController: NSObject, UICollectionViewDataSource, UICollectionViewDe
 
     var onEvent: ((Event) -> Void)?
  
-    var category = QueryOptions.photos
+    var category = SearchCategory.photos
+    var request: URLRequest?
+    var pageNumber: Int = 1
+    var searchWord = String()
 
-    func searchItems(with request: URLRequest, category: QueryOptions) async throws{
-        self.category = category
-        switch category {
+    func searchItems(with word: String, category: String) async throws {
+        self.category = SearchCategory(rawValue: category)!
+        let urlRequest = URLRequest(
+            path: category,
+            queryItems: Array.pageQueryItems(searchWord: word, page: pageNumber)
+        )
+
+        self.request = urlRequest
+        self.searchWord = word
+        switch self.category {
         case .photos:
-            let photosData = try await PhotosSearchRequest().sendRequest(with: request)
-            self.photoSearchData = photosData
+            let photosData = try await PhotosSearchRequest().sendRequest(with: urlRequest)
+            self.photoSearchData.append(contentsOf: photosData)
+
         case .collections:
-            let collectionsData = try await CollectionsSearchRequest().sendRequest(with: request)
+            let collectionsData = try await CollectionsSearchRequest().sendRequest(with: urlRequest)
             self.collectionSearchData = collectionsData
         case .users:
-            let usersData = try await UsersSearchRequest().sendRequest(with: request)
+            let usersData = try await UsersSearchRequest().sendRequest(with: urlRequest)
             self.userSearchData = usersData
         }
     }
     
 
 
-    func createLayout(cater: QueryOptions) -> UICollectionViewCompositionalLayout {
-        switch cater {
+    func createLayout() -> UICollectionViewCompositionalLayout {
+        switch self.category {
         case .photos:
             return UICollectionViewCompositionalLayout.photoSearchLayout
         case .collections:
@@ -130,10 +141,17 @@ class SearchController: NSObject, UICollectionViewDataSource, UICollectionViewDe
     }
 
     func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
-        print("item \(indexPath.item)")
-        print(indexPath.item % 29)
+    
         if indexPath.item % 29 == 0 {
+            Task {
+                do {
+                    pageNumber += 1
+                  try await searchItems(with: searchWord, category: category.rawValue)
+                } catch {
+                    print(error)
+                }
 
+            }
         }
     }
     

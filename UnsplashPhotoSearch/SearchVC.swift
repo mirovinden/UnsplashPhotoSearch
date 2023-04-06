@@ -16,10 +16,7 @@ class SearchViewController: UIViewController, UISearchBarDelegate {
     let searchView: SearchView = .init()
     private let dataSearchController = SearchController()
 
-    var pageNumber: Int = 1
     let searchCategory = ["photos", "collections", "users"]
-    var category = QueryOptions.photos
-
     var searchTask: Task<Void, Never>?
 
     override func viewDidLoad() {
@@ -31,19 +28,14 @@ class SearchViewController: UIViewController, UISearchBarDelegate {
     @objc func fetchMatchingItems() {
         let searchCategory = searchCategory[searchController.searchBar.selectedScopeButtonIndex]
         let searchWord = "panda"
-        let segmentIndex = searchView.itemPerPageView.segmentedControl.selectedSegmentIndex
-        guard let itemsPerPage = searchView.itemPerPageView.segmentedControl.titleForSegment(at: segmentIndex) else { return }
-        
-        category = QueryOptions.init(rawValue: searchController.searchBar.selectedScopeButtonIndex)!
-        let urlRequest = URLRequest(
-            path: searchCategory,
-            queryItems: Array.pageQueryItems(searchWord: searchWord, itemsPerPage: itemsPerPage, page: pageNumber)
-        )
+
+//        category = QueryOptions.init(rawValue: searchController.searchBar.selectedScopeButtonIndex)!
+
         searchTask?.cancel()
         searchTask = Task {
             do {
-                try await dataSearchController.searchItems(with: urlRequest, category: category)
-                searchView.collectionView.collectionViewLayout = dataSearchController.createLayout(cater: category)
+                try await dataSearchController.searchItems(with: searchWord, category: searchCategory)
+                searchView.collectionView.collectionViewLayout = dataSearchController.createLayout()
             } catch {
                 print(error)
             }
@@ -51,20 +43,9 @@ class SearchViewController: UIViewController, UISearchBarDelegate {
             searchTask?.cancel()
         }
     }
-    @objc func pageButtonsClicked(sender: UIButton) {
-        searchView.collectionView.setContentOffset(CGPoint(x: 0, y: 0), animated: false)
-        sender == searchView.pageNumberView.previousPageButton ? (pageNumber -= 1) : (pageNumber += 1)
-        searchView.pageNumberView.pageNumberLabel.text = String(pageNumber)
-        searchView.pageNumberView.previousPageButton.isEnabled = pageNumber == 1 ? false : true
 
-        fetchMatchingItems()
-    }
-//
     // searchControllerDelegate
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-        searchView.pageNumberView.pageNumberLabel.text = "1"
-        pageNumber = 1
-        searchView.pageNumberView.previousPageButton.isEnabled = false
         perform(#selector(fetchMatchingItems), with: nil)
     }
 
@@ -93,10 +74,6 @@ private extension SearchViewController {
             self.handleSearchControllerEvent(event)
         }
 
-        searchView.itemPerPageView.onEvent = { self.fetchMatchingItems() }
-        searchView.pageNumberView.onEvent = { button in
-            self.pageButtonsClicked(sender: button)
-        }
 
         searchView.collectionView.delegate = dataSearchController
         searchView.collectionView.dataSource = dataSearchController
