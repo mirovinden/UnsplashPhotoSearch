@@ -78,7 +78,6 @@ private extension SearchViewController {
         dataSearchController.scrollEvent =  { range in
             switch range {
             case .sectioned(let sections):
-                
                 print(sections)
                 self.searchView.collectionView.insertSections(IndexSet(sections))
             case .itemed(let items):

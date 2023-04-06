@@ -56,7 +56,7 @@ class SearchController: NSObject, UICollectionViewDataSource, UICollectionViewDe
             self.collectionSearchData.append(contentsOf: collectionsData)
         case .users:
             let usersData = try await UsersSearchRequest().sendRequest(with: urlRequest)
-            self.userSearchData = usersData
+            self.userSearchData.append(contentsOf: usersData)
         }
     }
     
@@ -171,13 +171,14 @@ class SearchController: NSObject, UICollectionViewDataSource, UICollectionViewDe
         let itemRange = Array(startIndex...startIndex + 29)
 //        print(" new item \(indexPath.item)")
 //        print("photos: \(photoSearchData.count)")
-        if lefted == 25 {
-            print("lefted: \(lefted)")
-            print("item index: \(indexPath.item)")
-            print("setoin index: \(indexPath.section)")
+//        print("lefted: \(lefted)")
+//        print("item index: \(indexPath.item)")
+//        print("setoin index: \(indexPath.section)")
+//
+//        print("photo count: \(photoSearchData.count) \n")
 
-            print("photo count: \(photoSearchData.count)")
-            print("colec count: \(collectionSearchData.count) \n")
+        if lefted == 25 {
+            print("colec count: \(userSearchData.count) ")
 
             Task {
                 do {
