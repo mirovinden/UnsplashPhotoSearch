@@ -74,6 +74,10 @@ private extension SearchViewController {
             self.handleSearchControllerEvent(event)
         }
 
+        dataSearchController.pageEvent =  { IndexPathes in
+            self.searchView.collectionView.insertItems(at: IndexPathes)
+        }
+
 
         searchView.collectionView.delegate = dataSearchController
         searchView.collectionView.dataSource = dataSearchController

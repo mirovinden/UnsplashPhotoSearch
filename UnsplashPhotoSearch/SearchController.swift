@@ -25,6 +25,7 @@ class SearchController: NSObject, UICollectionViewDataSource, UICollectionViewDe
     var userSearchData: [User] = []
 
     var onEvent: ((Event) -> Void)?
+    var pageEvent: (([IndexPath]) -> Void)?
  
     var category = SearchCategory.photos
     var request: URLRequest?
@@ -141,12 +142,20 @@ class SearchController: NSObject, UICollectionViewDataSource, UICollectionViewDe
     }
 
     func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
-    
+        let startIndex = photoSearchData.count
+        let itemRange = Array(startIndex...startIndex + 29)
+        let newIndexPath = itemRange.map { item in
+            IndexPath(item: item, section: 0)
+
+        }
+
         if indexPath.item % 29 == 0 {
+            print("Neew request")
             Task {
                 do {
                     pageNumber += 1
                   try await searchItems(with: searchWord, category: category.rawValue)
+                    pageEvent?(newIndexPath)
                 } catch {
                     print(error)
                 }
@@ -154,8 +163,5 @@ class SearchController: NSObject, UICollectionViewDataSource, UICollectionViewDe
             }
         }
     }
-    
-
-
 }
 

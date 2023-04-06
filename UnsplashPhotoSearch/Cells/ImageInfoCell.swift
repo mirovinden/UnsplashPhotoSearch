@@ -42,7 +42,7 @@ class ImageInfoCell: UICollectionViewCell {
 
         imageView.kf.indicatorType = .activity
         imageView.kf.setImage(
-            with: photoData.photoURL.regular,
+            with: photoData.photoURL.small,
             placeholder: UIImage(blurHash: photoData.blurHash, size: CGSize(width: 30, height: 30), punch: 1),
             options: [.transition(.fade(0.3))]
         )
