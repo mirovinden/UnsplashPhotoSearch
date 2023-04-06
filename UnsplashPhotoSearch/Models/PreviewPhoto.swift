@@ -9,7 +9,7 @@ import Foundation
 
 struct PreviewPhoto: Codable {
         let id: String
-        let blurHash: String
+        let blurHash: String?
         let photoURL: PhotoURLS
 
         enum CodingKeys: String, CodingKey {

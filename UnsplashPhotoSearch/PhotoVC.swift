@@ -33,8 +33,8 @@ class PhotoViewController: UIViewController {
         Task {
             self.photo = try await PhotoDataRequest().fetchPhotoData(photoId: photo.id)
             photoView.imageView.kf.setImage(
-                with: photo.photoURL.full,
-                placeholder: UIImage().blurHash(from: photo),
+                with: photo.photoURL.regular,
+                placeholder: UIImage.blurHash(from: photo),
                 options: [.transition(.fade(0.2)),]
             )
         }
@@ -50,7 +50,7 @@ private extension PhotoViewController {
         view.addSubview(photoView)
         title = photo.user?.username
 
-        photoView.imageView.image = UIImage().blurHash(from: photo)
+        photoView.imageView.image = UIImage.blurHash(from: photo)
         photoView.imageView.kf.indicatorType = .activity
 
         photoView.infoButtonEvent = {

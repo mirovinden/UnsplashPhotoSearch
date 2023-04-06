@@ -43,7 +43,7 @@ class ImageInfoCell: UICollectionViewCell {
         imageView.kf.indicatorType = .activity
         imageView.kf.setImage(
             with: photoData.photoURL.small,
-            placeholder: UIImage(blurHash: photoData.blurHash, size: CGSize(width: 30, height: 30), punch: 1),
+            placeholder: UIImage.blurHash(from: photoData),
             options: [.transition(.fade(0.3))]
         )
     }
@@ -51,8 +51,8 @@ class ImageInfoCell: UICollectionViewCell {
     func configure(with preview: PreviewPhoto) {
         imageView.kf.indicatorType = .activity
         imageView.kf.setImage(
-            with: preview.photoURL.small,
-            placeholder: UIImage(blurHash: preview.blurHash, size: CGSize(width: 30, height: 30), punch: 1),
+            with: preview.photoURL.thumb,
+            placeholder: UIImage(blurHash: preview.blurHash ?? "", size: CGSize(width: 30, height: 30), punch: 1),
             options: [.transition(.fade(0.3))]
         )
     }

@@ -19,14 +19,19 @@ class SearchController: NSObject, UICollectionViewDataSource, UICollectionViewDe
         case photoSelected(Photo)
         case collectionSelected(Collection)
     }
+
+    enum IndexType {
+        case sectioned([Int])
+        case itemed([Int])
+    }
     
     var photoSearchData: [Photo] = []
     var collectionSearchData: [Collection] = []
     var userSearchData: [User] = []
 
     var onEvent: ((Event) -> Void)?
-    var pageEvent: (([IndexPath]) -> Void)?
- 
+    var scrollEvent: ((IndexType) -> Void)?
+
     var category = SearchCategory.photos
     var request: URLRequest?
     var pageNumber: Int = 1
@@ -45,10 +50,10 @@ class SearchController: NSObject, UICollectionViewDataSource, UICollectionViewDe
         case .photos:
             let photosData = try await PhotosSearchRequest().sendRequest(with: urlRequest)
             self.photoSearchData.append(contentsOf: photosData)
-
         case .collections:
             let collectionsData = try await CollectionsSearchRequest().sendRequest(with: urlRequest)
-            self.collectionSearchData = collectionsData
+
+            self.collectionSearchData.append(contentsOf: collectionsData)
         case .users:
             let usersData = try await UsersSearchRequest().sendRequest(with: urlRequest)
             self.userSearchData = usersData
@@ -142,20 +147,48 @@ class SearchController: NSObject, UICollectionViewDataSource, UICollectionViewDe
     }
 
     func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
-        let startIndex = photoSearchData.count
-        let itemRange = Array(startIndex...startIndex + 29)
-        let newIndexPath = itemRange.map { item in
-            IndexPath(item: item, section: 0)
 
+        var startIndex: Int
+        var lefted: Int
+
+        switch category {
+        case .photos:
+            startIndex = photoSearchData.count
+            lefted = photoSearchData.count - indexPath.item
+        case .collections:
+            startIndex = collectionSearchData.count
+            if indexPath.item == 0 {
+                lefted = collectionSearchData.count - indexPath.section
+            } else {
+                lefted = 5
+            }
+            
+        case .users:
+            startIndex = userSearchData.count
+            lefted = userSearchData.count - indexPath.item
         }
 
-        if indexPath.item % 29 == 0 {
-            print("Neew request")
+        let itemRange = Array(startIndex...startIndex + 29)
+//        print(" new item \(indexPath.item)")
+//        print("photos: \(photoSearchData.count)")
+        if lefted == 25 {
+            print("lefted: \(lefted)")
+            print("item index: \(indexPath.item)")
+            print("setoin index: \(indexPath.section)")
+
+            print("photo count: \(photoSearchData.count)")
+            print("colec count: \(collectionSearchData.count) \n")
+
             Task {
                 do {
                     pageNumber += 1
-                  try await searchItems(with: searchWord, category: category.rawValue)
-                    pageEvent?(newIndexPath)
+                    try await searchItems(with: searchWord, category: category.rawValue)
+                    switch category {
+                    case .collections:
+                        scrollEvent?(.sectioned(itemRange))
+                    default:
+                        scrollEvent?(.itemed(itemRange))
+                    }
                 } catch {
                     print(error)
                 }
@@ -164,4 +197,3 @@ class SearchController: NSObject, UICollectionViewDataSource, UICollectionViewDe
         }
     }
 }
-

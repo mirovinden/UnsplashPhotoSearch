@@ -29,13 +29,13 @@ class SearchViewController: UIViewController, UISearchBarDelegate {
         let searchCategory = searchCategory[searchController.searchBar.selectedScopeButtonIndex]
         let searchWord = "panda"
 
-//        category = QueryOptions.init(rawValue: searchController.searchBar.selectedScopeButtonIndex)!
-
         searchTask?.cancel()
         searchTask = Task {
             do {
                 try await dataSearchController.searchItems(with: searchWord, category: searchCategory)
                 searchView.collectionView.collectionViewLayout = dataSearchController.createLayout()
+                searchView.collectionView.reloadData()
+
             } catch {
                 print(error)
             }
@@ -51,6 +51,7 @@ class SearchViewController: UIViewController, UISearchBarDelegate {
 
     func searchBar(_ searchBar: UISearchBar, selectedScopeButtonIndexDidChange selectedScope: Int) {
         fetchMatchingItems()
+        dataSearchController.pageNumber = 1
     }
 }
 
@@ -74,8 +75,19 @@ private extension SearchViewController {
             self.handleSearchControllerEvent(event)
         }
 
-        dataSearchController.pageEvent =  { IndexPathes in
-            self.searchView.collectionView.insertItems(at: IndexPathes)
+        dataSearchController.scrollEvent =  { range in
+            switch range {
+            case .sectioned(let sections):
+                
+                print(sections)
+                self.searchView.collectionView.insertSections(IndexSet(sections))
+            case .itemed(let items):
+                let indexes = items.map { IndexPath(item: $0, section: 0)}
+                self.searchView.collectionView.insertItems(at: indexes)
+
+            }
+//            self.searchView.collectionView.reloadData()
+
         }
 
 
