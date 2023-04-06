@@ -44,7 +44,6 @@ class SearchViewController: UIViewController, UISearchBarDelegate {
             do {
                 try await dataSearchController.searchItems(with: urlRequest, category: category)
                 searchView.collectionView.collectionViewLayout = dataSearchController.createLayout(cater: category)
-                searchView.collectionView.reloadData()
             } catch {
                 print(error)
             }
@@ -109,7 +108,15 @@ private extension SearchViewController {
         searchController.searchBar.showsScopeBar = true
 
         searchController.searchBar.scopeButtonTitles = ["Photos","Collections", "Users"]
-        searchController.searchBar.searchTextField.addTarget(self, action: #selector(fetchMatchingItems), for: .valueChanged)
+        searchController.searchBar.searchTextField.addAction(
+            UIAction { _ in
+                self.fetchMatchingItems()
+                self.searchView.collectionView.reloadData()
+
+            },
+            for: .valueChanged
+        )
+//        addTarget(self, action: #selector(fetchMatchingItems), for: .valueChanged)
         searchController.searchBar.layer.backgroundColor = .init(gray: 10, alpha: 1)
         
         setupConstraints()

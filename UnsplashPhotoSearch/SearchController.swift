@@ -129,6 +129,13 @@ class SearchController: NSObject, UICollectionViewDataSource, UICollectionViewDe
         }
     }
 
+    func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
+        print("item \(indexPath.item)")
+        print(indexPath.item % 29)
+        if indexPath.item % 29 == 0 {
+
+        }
+    }
     
 
 

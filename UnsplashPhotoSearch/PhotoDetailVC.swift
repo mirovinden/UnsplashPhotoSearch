@@ -15,8 +15,6 @@ class PhotoDetailViewController: UIViewController {
     var stackView: UIStackView = .init()
     
     let location: Location
-    
-    var coordinate = CLLocationCoordinate2D(latitude: 44.728, longitude: -74)
     let mapView = MKMapView()
     
     init(location: Location) {
@@ -30,26 +28,28 @@ class PhotoDetailViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        let latitude = location.position.latitude ?? 0
-        let longitude = location.position.longitude ?? 0
-        coordinate = CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
+
         setupUI()
     }
 }
 
+
 private extension PhotoDetailViewController {
+
+    @objc func doneButtonPressed() {
+        dismiss(animated: true)
+    }
+
     func setupUI() {
+        navigationItem.setLeftBarButton(
+            UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(doneButtonPressed)),
+            animated: true
+        )
         title = "Info"
+        
         view.backgroundColor = .gray
         view.addSubview(stackView)
         view.addSubview(mapView)
-
-        mapView.setRegion(
-            MKCoordinateRegion(
-                center: coordinate,
-                span: MKCoordinateSpan(latitudeDelta: 0.1, longitudeDelta: 0.1)),
-            animated: true
-        )
 
         stackView.addArrangedSubview(countryNameLabel)
         stackView.addArrangedSubview(cityNameLabel)
@@ -59,7 +59,26 @@ private extension PhotoDetailViewController {
         
         countryNameLabel.text = "Country: \(location.country ?? "")"
         cityNameLabel.text = "City: \(location.city ?? "")"
+
+        setupMapView()
         setupConstraints()
+    }
+
+    func setupMapView() {
+        let latitude = location.position.latitude ?? 0
+        let longitude = location.position.longitude ?? 0
+        let coordinate = CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
+
+        mapView.setRegion(
+            MKCoordinateRegion(
+                center: coordinate,
+                span: MKCoordinateSpan(latitudeDelta: 0.1, longitudeDelta: 0.1)),
+            animated: true
+        )
+
+        let pin = MKPointAnnotation()
+        pin.coordinate = coordinate
+        mapView.addAnnotation(pin)
     }
     
     func setupConstraints() {

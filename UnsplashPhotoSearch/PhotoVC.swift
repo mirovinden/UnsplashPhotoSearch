@@ -54,7 +54,8 @@ private extension PhotoViewController {
         photoView.imageView.kf.indicatorType = .activity
 
         photoView.infoButtonEvent = {
-            self.present(PhotoDetailViewController(location: self.photo.location!), animated: true)
+            let detailVc = PhotoDetailViewController(location: self.photo.location!)
+            self.present(UINavigationController(rootViewController: detailVc), animated: true)
         }
 
     }
