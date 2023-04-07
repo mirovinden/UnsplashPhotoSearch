@@ -7,10 +7,12 @@
 
 import UIKit
 
-class CollectionDetailViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate {
+class CollectionPhotosViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate {
     var collectionView: UICollectionView = .init(frame: CGRect(), collectionViewLayout: UICollectionViewCompositionalLayout.photoSearchLayout)
     let photoUrl: URL
     var photosData: [Photo] = []
+    var pageNumber = 1
+
     var photoRequestTask: Task<Void, Never>?
 
     init (photoUrl: URL) {
@@ -37,10 +39,10 @@ class CollectionDetailViewController: UIViewController, UICollectionViewDataSour
         collectionView.frame = view.bounds
     }
     func fetchPhotos() {
-        photoRequestTask?.cancel()
         photoRequestTask = Task {
             do {
-                self.photosData = try await FetchPhotos().fetchPhotos(with: photoUrl)
+                let photosData = try await FetchPhotos().fetchPhotos(with: photoUrl, page: pageNumber)
+                self.photosData.append(contentsOf: photosData)
             } catch {
                 print(error)
             }
@@ -70,7 +72,18 @@ class CollectionDetailViewController: UIViewController, UICollectionViewDataSour
         
         self.show(photoDetailVC, sender: nil)
     }
+
+    //lags on reloaddata
+    func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
+        var lefted = photosData.count - indexPath.item
+
+        if lefted == 25 {
+            pageNumber += 1
+            fetchPhotos()
+        }
+    }
 }
+
 
 
 

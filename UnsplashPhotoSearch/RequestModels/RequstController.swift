@@ -51,7 +51,16 @@ struct PhotoDataRequest {
 }
 
 struct FetchPhotos {
-    func fetchPhotos(with url: URL) async throws -> [Photo] {
+    func fetchPhotos(with url: URL, page: Int) async throws -> [Photo] {
+       let queryItems = [
+            "page": "\(page)",
+            "per_page": "30",
+        ].map { URLQueryItem(name: $0.key, value: $0.value) }
+
+        var urlComponents = URLComponents(url: url, resolvingAgainstBaseURL: false)!
+        urlComponents.queryItems = queryItems
+        let url = URL(string: urlComponents.string!)!
+
         var urlRequest = URLRequest(url: url)
         urlRequest.setValue("Client-ID ZmifjFVuI-ybPzVC0bjS5fVfOxX8q8KHH813yxMKkhY", forHTTPHeaderField: "Authorization")
 

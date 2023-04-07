@@ -21,7 +21,7 @@ class SearchViewController: UIViewController, UISearchBarDelegate {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        setupUI()
+        setup()
         fetchMatchingItems()
     }
 
@@ -63,14 +63,12 @@ private extension SearchViewController {
             let photoDetailVC = PhotoViewController(photo: photo)
             self.show(photoDetailVC, sender: nil)
         case .collectionSelected(let collection):
-            let collectionDetailVC = CollectionDetailViewController(photoUrl: collection.photosURL)
+            let collectionDetailVC = CollectionPhotosViewController(photoUrl: collection.photosURL)
             self.show(collectionDetailVC, sender: nil)
         }
     }
 
-    func setupUI() {
-        view.addSubview(searchView)
-        view.backgroundColor = .white
+    func setupEvents () {
         dataSearchController.onEvent = { [unowned self] event in
             self.handleSearchControllerEvent(event)
         }
@@ -78,17 +76,17 @@ private extension SearchViewController {
         dataSearchController.scrollEvent =  { range in
             switch range {
             case .sectioned(let sections):
-                print(sections)
                 self.searchView.collectionView.insertSections(IndexSet(sections))
             case .itemed(let items):
                 let indexes = items.map { IndexPath(item: $0, section: 0)}
                 self.searchView.collectionView.insertItems(at: indexes)
-
             }
-//            self.searchView.collectionView.reloadData()
-
         }
+    }
 
+    func setup() {
+        view.addSubview(searchView)
+        view.backgroundColor = .white
 
         searchView.collectionView.delegate = dataSearchController
         searchView.collectionView.dataSource = dataSearchController
@@ -108,9 +106,9 @@ private extension SearchViewController {
             },
             for: .valueChanged
         )
-//        addTarget(self, action: #selector(fetchMatchingItems), for: .valueChanged)
         searchController.searchBar.layer.backgroundColor = .init(gray: 10, alpha: 1)
-        
+
+        setupEvents()
         setupConstraints()
     }
     

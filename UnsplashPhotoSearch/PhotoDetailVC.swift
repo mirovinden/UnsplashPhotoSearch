@@ -10,12 +10,8 @@ import MapKit
 import CoreLocation
 
 class PhotoDetailViewController: UIViewController {
-    var countryNameLabel: UILabel = .init()
-    var cityNameLabel: UILabel = .init()
-    var stackView: UIStackView = .init()
-    
+    let photoDetailView = PhotoDetailView()
     let location: Location
-    let mapView = MKMapView()
     
     init(location: Location) {
         self.location = location
@@ -28,11 +24,9 @@ class PhotoDetailViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        setupUI()
+        setup()
     }
 }
-
 
 private extension PhotoDetailViewController {
 
@@ -40,36 +34,30 @@ private extension PhotoDetailViewController {
         dismiss(animated: true)
     }
 
-    func setupUI() {
+    func setup() {
         navigationItem.setLeftBarButton(
             UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(doneButtonPressed)),
             animated: true
         )
         title = "Info"
-        
+        view.addSubview(photoDetailView)
         view.backgroundColor = .gray
-        view.addSubview(stackView)
-        view.addSubview(mapView)
-
-        stackView.addArrangedSubview(countryNameLabel)
-        stackView.addArrangedSubview(cityNameLabel)
-        stackView.axis = .vertical
-        stackView.alignment = .leading
-        stackView.distribution  = .fillEqually
-        
-        countryNameLabel.text = "Country: \(location.country ?? "")"
-        cityNameLabel.text = "City: \(location.city ?? "")"
+        photoDetailView.countryNameLabel.text = "Country: \(location.country ?? "")"
+        photoDetailView.cityNameLabel.text = "City: \(location.city ?? "")"
 
         setupMapView()
         setupConstraints()
     }
 
     func setupMapView() {
-        let latitude = location.position.latitude ?? 0
-        let longitude = location.position.longitude ?? 0
+        guard let latitude = location.position.latitude, let longitude = location.position.longitude else {
+            photoDetailView.changeMapHeight()
+            return
+        }
+    
         let coordinate = CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
-
-        mapView.setRegion(
+        
+        photoDetailView.mapView.setRegion(
             MKCoordinateRegion(
                 center: coordinate,
                 span: MKCoordinateSpan(latitudeDelta: 0.1, longitudeDelta: 0.1)),
@@ -78,23 +66,18 @@ private extension PhotoDetailViewController {
 
         let pin = MKPointAnnotation()
         pin.coordinate = coordinate
-        mapView.addAnnotation(pin)
+        photoDetailView.mapView.addAnnotation(pin)
+        
     }
     
     func setupConstraints() {
-        stackView.translatesAutoresizingMaskIntoConstraints = false
-        mapView.translatesAutoresizingMaskIntoConstraints = false
+        photoDetailView.translatesAutoresizingMaskIntoConstraints = false
         
-        let mapViewHeight: CGFloat = 200
         NSLayoutConstraint.activate([
-            mapView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 15),
-            mapView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 10),
-            mapView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -10),
-            mapView.heightAnchor.constraint(equalToConstant: mapViewHeight),
-            
-            stackView.topAnchor.constraint(equalTo: mapView.bottomAnchor, constant: 10),
-            stackView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 10),
-            stackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -10),
+            photoDetailView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            photoDetailView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            photoDetailView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            photoDetailView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
         ])
     }
 }
