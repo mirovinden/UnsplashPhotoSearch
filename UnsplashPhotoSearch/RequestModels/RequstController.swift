@@ -15,6 +15,9 @@ struct PhotosSearchRequest: APIRequest {
     }
 }
 
+
+
+
 struct CollectionsSearchRequest: APIRequest {
     func decodeResponse(data: Data) throws -> [Collection] {
         let collectionsSearchData = try JSONDecoder().decode(CollectionsSearchResults.self, from: data)
@@ -77,3 +80,11 @@ struct FetchPhotos {
 }
 
 
+
+struct UserPhotosRequest: APIRequest {
+    func decodeResponse(data: Data) throws -> [Photo] {
+        let photos = try JSONDecoder().decode([Photo].self, from: data)
+        
+        return photos
+    }
+}

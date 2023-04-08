@@ -57,14 +57,17 @@ class SearchViewController: UIViewController, UISearchBarDelegate {
 
 //UISetup
 private extension SearchViewController {
-    private func handleSearchControllerEvent(_ event: SearchController.Event) {
+    func handleSearchControllerEvent(_ event: SearchController.Event) {
         switch event {
         case .photoSelected(let photo):
-            let photoDetailVC = PhotoViewController(photo: photo)
-            self.show(photoDetailVC, sender: nil)
+            let photoVC = PhotoViewController(photo: photo)
+            self.show(photoVC, sender: nil)
         case .collectionSelected(let collection):
-            let collectionDetailVC = CollectionPhotosViewController(photoUrl: collection.photosURL)
-            self.show(collectionDetailVC, sender: nil)
+            let collectionVC = CollectionPhotosViewController(photoUrl: collection.photosURL)
+            self.show(collectionVC, sender: nil)
+        case .userSelected(let user):
+            let userVC = UserViewController(user: user)
+            self.show(userVC, sender: nil)
         }
     }
 

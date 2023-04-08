@@ -73,9 +73,9 @@ class CollectionPhotosViewController: UIViewController, UICollectionViewDataSour
         self.show(photoDetailVC, sender: nil)
     }
 
-    //lags on reloaddata
+    //lags on reloaddata, proble with insert
     func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
-        var lefted = photosData.count - indexPath.item
+        let lefted = photosData.count - indexPath.item
 
         if lefted == 25 {
             pageNumber += 1

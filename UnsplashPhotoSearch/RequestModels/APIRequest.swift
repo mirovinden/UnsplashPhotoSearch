@@ -31,6 +31,7 @@ extension URLRequest {
 
         components.path = "/search/\(path)"
         components.queryItems = queryItems
+        
 
         let baseURL = URL(string: components.string!)!
 

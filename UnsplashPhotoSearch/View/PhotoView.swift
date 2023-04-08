@@ -11,6 +11,7 @@ class PhotoView: UIView {
     let likesView: LikesView = .init()
     let imageView: UIImageView = .init()
     private let infoButton: UIButton = .init()
+
     var infoButtonEvent: (() -> Void)?
 
     override init(frame: CGRect) {

@@ -9,7 +9,7 @@ import UIKit
 import Kingfisher
 
 class PhotoViewController: UIViewController {
-    let photoView: PhotoView = .init()
+    private lazy var photoView: PhotoView = .init()
 
     var photo: Photo
     

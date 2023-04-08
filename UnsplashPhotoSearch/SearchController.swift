@@ -18,6 +18,7 @@ class SearchController: NSObject, UICollectionViewDataSource, UICollectionViewDe
     enum Event {
         case photoSelected(Photo)
         case collectionSelected(Collection)
+        case userSelected(User)
     }
 
     enum IndexType {
@@ -46,13 +47,13 @@ class SearchController: NSObject, UICollectionViewDataSource, UICollectionViewDe
 
         self.request = urlRequest
         self.searchWord = word
+        
         switch self.category {
         case .photos:
             let photosData = try await PhotosSearchRequest().sendRequest(with: urlRequest)
             self.photoSearchData.append(contentsOf: photosData)
         case .collections:
             let collectionsData = try await CollectionsSearchRequest().sendRequest(with: urlRequest)
-
             self.collectionSearchData.append(contentsOf: collectionsData)
         case .users:
             let usersData = try await UsersSearchRequest().sendRequest(with: urlRequest)
@@ -142,7 +143,8 @@ class SearchController: NSObject, UICollectionViewDataSource, UICollectionViewDe
             let collection = collectionSearchData[indexPath.section]
             onEvent?(.collectionSelected(collection))
         case .users:
-            return
+            let user = userSearchData[indexPath.item]
+            onEvent?(.userSelected(user))
         }
     }
 
@@ -162,23 +164,14 @@ class SearchController: NSObject, UICollectionViewDataSource, UICollectionViewDe
             } else {
                 lefted = 5
             }
-            
         case .users:
             startIndex = userSearchData.count
             lefted = userSearchData.count - indexPath.item
         }
 
         let itemRange = Array(startIndex...startIndex + 29)
-//        print(" new item \(indexPath.item)")
-//        print("photos: \(photoSearchData.count)")
-//        print("lefted: \(lefted)")
-//        print("item index: \(indexPath.item)")
-//        print("setoin index: \(indexPath.section)")
-//
-//        print("photo count: \(photoSearchData.count) \n")
 
         if lefted == 25 {
-            print("colec count: \(userSearchData.count) ")
 
             Task {
                 do {
